@@ -1,4 +1,4 @@
 karlcastle.github.io
 ====================
 
-GitHub Pages
+Repository for GitHub Pages
