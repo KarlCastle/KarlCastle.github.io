@@ -491,4 +491,5 @@
 	$.indexedDB.IDBCursor = IDBCursor;
 	$.indexedDB.IDBTransaction = IDBTransaction;
 	$.idb = $.indexedDB;
+	return $;
 })(jQuery);
