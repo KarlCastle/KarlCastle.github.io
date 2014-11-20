@@ -55,7 +55,7 @@ var GM_ajaxTransport;
     var gmXHR = {
       'send': function(headers, completeCallback) {
         var opts = {
-          'method': op.method,
+          'method': op.type,
           'url': op.url,
           'headers': headers,
           'onload': function(r) {
@@ -264,11 +264,16 @@ var GM_require;
       if (typeof m != 'undefined')
         return m;
 
-      var p = $.ajax(u, { 'dataType': 'xsjs', })
+      var p = $.ajax(u, {
+          'dataType': 'xsjs',
+          'headers': { 'Accept': 'application/javascript;q=0.9,*/*;q=0.8', },
+          })
         .then(function(s, t, jqXHR){
           return GM_require.loadSource(u, s);
         }, function(jqXHR, t, e){
           console.error(e);
+          console.debug(t);
+          console.debug(jqXHR);
           return undefined;
         });
       return p;
