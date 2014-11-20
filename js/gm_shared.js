@@ -35,26 +35,6 @@ function content_exec(s, encapsulated) {
 
 
 /**
- * Canonicalize a query string (alphabetize keys)
- */
-function canonical_url(u) {
-  if (u.indexOf('?') < 0)
-    return u;
-  var s = u.substring(u.indexOf('?'));
-  s = s.replace(';', '&');
-  var o = $.deparam(s);
-  
-  var p = {};
-  Object.keys(o).map(function(e, i, a) { return [e, o[e]]; }).sort().forEach(function(e, i, a){ p[e[0]] = e[1]; });
-  
-  if (p['action'] == 'view' && typeof p['view'] != 'undefined')
-    delete p['view'];
-  
-  return u.substring(0, u.indexOf('?')) + '?' + $.param(p);
-}
-
-
-/**
  * Emulate throwing an exception inside a promise chain by return a pre-rejected promise.
  */
 var deferred_throw;
@@ -241,11 +221,35 @@ var GM_ajaxTransport;
 
 
 /**
+ * Canonicalize a query string (alphabetize keys)
+ */
+var canonical_url;
+(function($) {
+  canonical_url = function(u) {
+    if (u.indexOf('?') < 0)
+      return u;
+    var s = u.substring(u.indexOf('?'));
+    s = s.replace(';', '&');
+    var o = $.deparam(s);
+    var p = {};
+    Object.keys(o)
+      .map(function(e, i, a) { return [e, o[e]]; })
+      .sort()
+      .forEach(function(e, i, a){ p[e[0]] = e[1]; })
+      ;
+    if (p.action == 'view' && typeof p.view != 'undefined')
+      delete p.view;
+    return u.substring(0, u.indexOf('?')) + '?' + $.param(p);
+  };
+})(jQuery);
+
+
+/**
  * Javascript dynamic loader for Greasemonkey.
  * 
  */
 var GM_require;
-(function() {
+(function($) {
   /**
    * GM_require('<url>');
    * 
@@ -285,4 +289,4 @@ var GM_require;
     }
     return GM_require.cache[u];
   };
-})();
+})(jQuery);
