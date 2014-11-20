@@ -260,7 +260,7 @@ var GM_require;
    */
   GM_require = function(u) {
     try {
-      var m = GM_require.cache[u]; // promise
+      var m = GM_require.cache[u];
       if (typeof m != 'undefined')
         return m;
 
@@ -269,11 +269,10 @@ var GM_require;
           'headers': { 'Accept': 'application/javascript;q=0.9,*/*;q=0.8', },
           })
         .then(function(s, t, jqXHR){
-          return GM_require.loadSource(u, s);
+          GM_require.cache[u] = $.when(GM_require.loadSource(u, s));
+          return GM_require.cache[u];
         }, function(jqXHR, t, e){
           console.error(e);
-          console.debug(t);
-          console.debug(jqXHR);
           return undefined;
         });
       return p;
@@ -287,11 +286,10 @@ var GM_require;
 
   GM_require.loadSource = function(u, s) {
     try {
-      GM_require.cache[u] = eval(s);
+      return eval(s);
     } catch (err) {
       throw 'GM_require.loadSource(): eval of module ' + u + ' failed: ' + err.message;
-      return null;
     }
-    return GM_require.cache[u];
+    return null;
   };
 })(jQuery);
