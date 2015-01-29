@@ -245,6 +245,16 @@ var canonical_url;
 
 
 /**
+ * Retrieve the QueryString and return it as an object
+ */
+function getQueryString() {
+  if (typeof getQueryString.o == 'undefined' || !getQueryString.o)
+    getQueryString.o = jQuery.deparam(window.location.search); // Object.fromQueryString()
+  return getQueryString.o;
+}
+
+
+/**
  * Javascript dynamic loader for Greasemonkey.
  * 
  */
