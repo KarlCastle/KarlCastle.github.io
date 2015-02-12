@@ -12,7 +12,7 @@
 /**
  * Execute arbitrary string s as javascript in content context.
  */
-function content_exec(s, encapsulated) {
+function content_exec(s, encapsulated, cleanup) {
   if (typeof encapsulated == 'undefined')
     encapsulated = true;
   try {
@@ -24,7 +24,8 @@ function content_exec(s, encapsulated) {
       script.textContent = s;
     setTimeout(function() {
       document.body.appendChild(script);
-      document.body.removeChild(script);
+      if (typeof cleanup == 'undefined' || cleanup == true)
+        document.body.removeChild(script);
       }, 0);
     return script;
   } catch (e) {
