@@ -36,6 +36,18 @@ function content_exec(s, encapsulated, cleanup) {
 
 
 /**
+ * Include a script file in content context.
+ */
+function content_include(u) {
+  var script = document.createElement('script');
+  script.setAttribute('type', 'application/javascript');
+  script.setAttribute('src', u);
+  setTimeout(function() { document.body.appendChild(script); }, 0);
+  return script;
+}
+
+
+/**
  * Emulate throwing an exception inside a promise chain by return a pre-rejected promise.
  */
 var deferred_throw;
