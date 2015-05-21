@@ -127,10 +127,12 @@ var GM_ajaxTransport;
   
   $.ajaxTransport('xsjson', GM_ajaxTransport);
   $.ajaxTransport('xsjs', GM_ajaxTransport);
+  $.ajaxTransport('xstext', GM_ajaxTransport);
   $.ajaxSetup({
     'converters': {
       'text xsjson': $.parseJSON,
       'text xsjs': true,
+      'text xstext': true,
       },
   });
 })(jQuery);
