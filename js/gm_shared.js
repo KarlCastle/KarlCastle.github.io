@@ -76,6 +76,7 @@ var GM_ajaxTransport;
             // if (this.aborted) return;
             if (op.gm_debug)
               console.debug('onload', op, r);
+            gmXHR.jqXHR.responseUrl = r.finalUrl;
             completeCallback(r.status, r.statusText, { 'text': r.responseText }, r.responseHeaders);
           },
           'onerror': function(r) {
@@ -114,11 +115,12 @@ var GM_ajaxTransport;
           opts['password'] = op.password;
         if (typeof op.timeout != 'undefined')
           opts['timeout'] = op.timeout;
-        gmXHR.xhr = GM_xmlhttpRequest(opts);
+        this.jqXHR = jqXHR;
+        this.xhr = GM_xmlhttpRequest(opts);
       },
       'abort': function() {
-        gmXHR.aborted = true;
-        gmXHR.xhr.abort();
+        this.aborted = true;
+        this.xhr.abort();
       },
       'aborted': false,
       };
@@ -133,7 +135,7 @@ var GM_ajaxTransport;
       'text xsjson': $.parseJSON,
       'text xsjs': true,
       'text xstext': true,
-      },
+     },
   });
 })(jQuery);
 
