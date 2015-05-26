@@ -67,6 +67,7 @@ var GM_ajaxTransport;
   GM_ajaxTransport = function(op, oo, jqXHR) {
     var gmXHR = {
       'send': function(headers, completeCallback) {
+        console.log('GM_AJAX: ' + op.url);
         var opts = {
           'method': op.type,
           'url': op.url,
@@ -146,7 +147,7 @@ var GM_ajaxTransport;
  * https://github.com/chrissrogers/jquery-deparam/blob/master/jquery-deparam.js
 */
 (function ($) {
-  jQuery.deparam = function (querystring, coerce) {
+  $.deparam = function (querystring, coerce) {
     var re = /^([^=]*)(?:=(.*))?$/;
     var obj = {},
         coerce_types = { 'true': !0, 'false': !1, 'null': null };
@@ -155,7 +156,8 @@ var GM_ajaxTransport;
     var pairs = querystring.replace(/\+/g, ' ').split(/&|;/);
       
     // Iterate over all name=value pairs.
-    jQuery.each(pairs, function (i, s) {
+    //$.each(pairs, function (i, s) {
+    Array.forEach(pairs, function (s, i, arr) {
       var pair = re.exec(s),
           key = decodeURIComponent(pair[1]),
           // If key is more complex than 'foo', like 'a[]' or 'a[b][c]', split it
@@ -209,7 +211,7 @@ var GM_ajaxTransport;
           // Simple key, even simpler rules, since only scalars and shallow
           // arrays are allowed.
             
-          if (jQuery.isArray(obj[key])) {
+          if (Array.isArray(obj[key])) { // $.isArray
             // val is already an array, so push on the next value.
             obj[key].push(val);
               
