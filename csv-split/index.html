@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang='en'>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>CSV Split</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.3.1/united/bootstrap.css" integrity="sha256-11wnjagyHLqQlgmR0OO1H+3YbBg3f1Kw37Dx781XzfY=" crossorigin="anonymous" />
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" integrity="sha256-rDWX6XrmRttWyVBePhmrpHnnZ1EPmM6WQRQl6h0h7J8=" crossorigin="anonymous" /> -->
+<style type="text/css">
+html, body { height: 100%; }
+body { padding-top: 4rem; }
+nav { background: white; }
+file { display: none; }
+</style>
+</head>
+<body>
+  <nav class='navbar fixed-top navbar-expand-lg'>
+    <a class='navbar-brand' href='#'>CSV Split</a>
+    <button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation'>
+      <span class='navbar-toggler-icon'></span>
+    </button>
+    <div class='collapse navbar-collapse' id='navbarSupportedContent'>
+    </div>
+  </nav>
+  <div class='container-fluid'>
+    <div class="form-group">
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="csv" />
+        <label class="custom-file-label" for="csv">Choose file</label>
+      </div>
+    </div>
+    <div class="row">
+      <!-- <div class="col form-group">
+        <label for="headerlines">Lines of Header</label>
+        <input type="text" class="form-control" id="headerlines" placeholder="" value="1" />
+      </div> -->
+      <div class="col form-group">
+        <label for="filelines">Lines per File</label>
+        <input type="text" class="form-control" id="filelines" placeholder="" value="400" />
+      </div>
+    </div>
+    <ul class="list-group" id='filebox'>
+
+    </ul>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.15.0/popper.min.js" integrity="sha256-1XfFQxRfNvDJW3FdZ+xlo2SbodG2+rFArw6XsVzu3bc=" crossorigin="anonymous"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha256-CjSoeELFOcH0/uxWu6mC/Vlrc1AARqbm/jiiImDGV3s=" crossorigin="anonymous"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js" integrity="sha256-eZNgBgutLI47rKzpfUji/dD9t6LRs2gI3YqXKdoDOmo=" crossorigin="anonymous"></script> -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js" integrity="sha256-7/yoZS3548fXSRXqc/xYzjsmuW3sFKzuvOCHd06Pmps=" crossorigin="anonymous"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.js" integrity="sha256-RvQEzpawNgXWAvdOhEjTuvrpZuj71yDH2phPmZJ6yks=" crossorigin="anonymous"></script>
+<script>
+window.URL = window.URL || window.webkitURL;
+window.BlobBuilder = window.BlobBuilder || window.MozBlobBuilder || window.WebKitBlobBuilder;
+if (window.File && window.FileReader && window.FileList && window.Blob) {
+} else {
+  alert('File API not fully supported by this browser');
+}
+
+function pFileReader(file, fmt) {
+  return new Promise(function(resolve, reject) {
+    let fr = new FileReader();  
+    fr.onload = function(ev) { resolve(ev.target.result); };
+    fr.onerror = function(ev) { reject(); };
+    fr.onabort = function(ev) { reject(); };
+    if (fmt == 'text') {
+      fr.readAsText(file);
+    } else {
+      fr.readAsArrayBuffer(file);
+    }
+    fr = null;
+  });
+}
+
+function splitFilename(filename) {
+  let i = filename.lastIndexOf('.');
+  if (i < 0) {
+    return [filename, ''];
+  }
+  return [filename.slice(0, i), filename.slice(i + 1)];
+}
+
+function addDownload(rows, source, idx) {
+  let [basename, ext] = splitFilename(source.name);
+  let filename = `${basename}--${idx}.${ext}`;
+  let config = {
+    'quotes': true,
+    'quoteChar': '"',
+    'escapeChar': '"',
+    'delimiter': ',',
+    'header': true,
+    'newline': "\r\n",
+    'skipEmptyLines': true, // 'greedy',
+    // 'columns': null,
+  };
+  let blob = new Blob([Papa.unparse(rows, config),], { 'type': 'text/plain', });
+  let url = URL.createObjectURL(blob);
+  let box = document.getElementById('filebox');
+  box.insertAdjacentHTML('beforeend', `<a href="${url}" download="${filename}"><li class="list-group-item">${filename}</li></a>`);
+  blob = url = null;
+}
+
+function preventDefaultHandler(ev) {
+  ev.preventDefault();
+}
+
+window.addEventListener('dragenter', preventDefaultHandler);
+window.addEventListener('dragover', preventDefaultHandler);
+window.addEventListener('drop', function(ev) {
+  ev.stopPropagation();
+  ev.preventDefault();
+  let header_rows = 1;
+  let rows_per_file = parseInt(document.getElementById('filelines').value, 10);
+  if (rows_per_file < 1) {
+    rows_per_file = 1;
+  }
+  for (let file of ev.dataTransfer.files) { // .originalEvent.
+    // let reader = pFileReader(file, 'text'); // 'binary'
+      //.then(buf => new Uint8Array(buf));
+    let header = [];
+    let output = [];
+    let i = 0;
+    let config = {
+      'worker': true,
+      'skipEmptyLines': true, // 'greedy',
+      'step': (row, parser) => {
+        console.log(row);
+        if (header.length < header_rows) {
+          header.push(row.data);
+          return;
+        }
+        output.push(row.data);
+        if (output.length >= rows_per_file) {
+          addDownload(header.concat(output), file, i++);
+          output = [];
+        }
+      },
+      'complete': (rows, source) => {
+        if (output.length) {
+          addDownload(header.concat(output), file, i);
+        }
+      },
+    };
+    // reader.then(buf => Papa.parse(buf, config))
+    // reader.then(buf => console.log(typeof buf));
+    Papa.parse(file, config);
+  }
+});
+
+
+window.addEventListener('DOMContentLoaded', function(ev) {
+  let el = document.getElementById('filelines');
+  let li = localStorage.getItem('filelines');
+  if (el && li) {
+    el.value = parseInt(li, 10);
+  }
+  el.addEventListener('change', function(ev) {
+    let li = parseInt(this.value, 10);
+    if (li && li > 0) {
+      localStorage.setItem('filelines', li);
+    }
+  });
+});
+
+</script>
+</body>
+</html>
